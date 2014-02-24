@@ -47,10 +47,20 @@ class FieldLabelViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractView
 		}
 
 		if (strpos($key, 'LLL:') === 0) {
-			return $GLOBALS['TSFE']->sL($key);
+			$result = $this->getFrontendObject()->sL($key);
 		} else {
-			return TcaService::table($dataType)->field($key)->getLabel();
+			$result = TcaService::table($dataType)->field($key)->getLabel();
 		}
+		return $result;
+	}
+
+	/**
+	 * Returns an instance of the Frontend object.
+	 *
+	 * @return \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController
+	 */
+	protected function getFrontendObject() {
+		return $GLOBALS['TSFE'];
 	}
 }
 ?>

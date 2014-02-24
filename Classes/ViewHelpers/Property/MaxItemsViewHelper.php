@@ -1,6 +1,5 @@
 <?php
 namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
-
 /***************************************************************
  *  Copyright notice
  *
@@ -23,36 +22,37 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
-use TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\QuickForm\ViewHelpers\AbstractValidationViewHelper;
+use TYPO3\CMS\Vidi\Tca\TcaService;
 
 /**
- * View helper which returns a property value. The property and the object are given from the context.
+ * View helper which return the max items to be in relation with the object in the context.
+ * If it is not defined, return an arbitrary big number.
  */
-class ValueViewHelper extends RenderViewHelper {
+class MaxItemsViewHelper extends AbstractValidationViewHelper {
 
 	/**
-	 * Returns a property value. The property and the object are given from the context.
+	 * Returns the max items to be in relation with the object in the context.
 	 *
-	 * @return string
+	 * @throws \Exception
+	 * @return int
 	 */
 	public function render() {
+		$result = 9999; // arbitrary big number
 
-		$result = '';
-
-		// Retrieve object or array.
-		$formObjectName = $this->viewHelperVariableContainer->get('TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper', 'formObjectName');
-		if ($this->templateVariableContainer->exists($formObjectName)) {
-
-			$object = $this->templateVariableContainer->get($formObjectName);
-
-			if (!empty($object)) {
-				// Retrieve the property name.
-				$property = $this->templateVariableContainer->get('property');
-				$result = ObjectAccess::getProperty($object, $property);
-			}
+		$dataType = $this->templateVariableContainer->get('dataType');
+		if (empty($dataType)) {
+			throw new \Exception('Could not found a valid data type', 1385408252);
 		}
 
+		$property = $this->templateVariableContainer->get('property');
+		$fieldName = GeneralUtility::camelCaseToLowerCaseUnderscored($property);
+		$configuration = TcaService::table($dataType)->field($fieldName)->getConfiguration();
+
+		if (isset($configuration['maxitems'])) {
+			$result = $configuration['maxitems'];
+		}
 		return $result;
 	}
 }
