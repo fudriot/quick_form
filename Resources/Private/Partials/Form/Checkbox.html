@@ -5,7 +5,7 @@
 	<f:section name="Checkbox">
 			<div class="checkbox {qf:render.hasError(property: '{property}')}">
 				<label>
-					<f:form.checkbox class="{property}" value="1"
+					<f:form.checkbox name="{property}" value="1"
 					                 additionalAttributes="{autocomplete: 'off'}"
 					                 checked="{qf:form.isChecked(expectedValue: '1')}"/>
 
