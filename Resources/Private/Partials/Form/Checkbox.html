@@ -1,17 +1,26 @@
 <div xmlns="http://www.w3.org/1999/xhtml" lang="en"
      xmlns:f="http://typo3.org/ns/fluid/ViewHelpers"
-     xmlns:qf="http://typo3.org/ns/TYPO3/CMS/QuickForm/ViewHelpers">
+     xmlns:qf="http://typo3.org/ns/Vanilla/QuickForm/ViewHelpers">
 
 	<f:section name="Checkbox">
-			<div class="checkbox {qf:render.hasError(property: '{property}')}">
+		<div id="form-group-{property}" class="form-group {qf:property.errorClass()}">
+			<label class="control-label">
+				{group_label}
+				<f:if condition="{group_label}">
+					<f:if condition="{qf:property.isRequired(property: '{property}')}">*</f:if>
+				</f:if>
+			</label>
+			<div class="checkbox">
 				<label>
 					<f:form.checkbox name="{property}" value="1"
-					                 additionalAttributes="{autocomplete: 'off'}"
+					                 additionalAttributes="{qf:form.additionalAttributes()}"
 					                 checked="{qf:form.isChecked(expectedValue: '1')}"/>
-
-					<qf:tca.fieldLabel />
-					<f:if condition="{qf:property.isRequired(property: '{property}')}">*</f:if>
+					<qf:tca.fieldLabel/>
+					<f:if condition="!{group_label}">
+						<f:if condition="{qf:property.isRequired(property: '{property}')}">*</f:if>
+					</f:if>
 				</label>
 			</div>
+		</div>
 	</f:section>
 </div>

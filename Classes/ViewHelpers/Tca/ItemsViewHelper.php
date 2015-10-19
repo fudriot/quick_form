@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
+namespace Vanilla\QuickForm\ViewHelpers\Tca;
 
 /***************************************************************
  *  Copyright notice
@@ -26,12 +26,13 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Vidi\Tca\TcaService;
+use TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper;
+use Fab\Vidi\Tca\Tca;
 
 /**
  * View helper which returns options given a field name.
  */
-class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
+class ItemsViewHelper extends RenderViewHelper {
 
 	/**
 	 * Returns options of the current property.
@@ -39,7 +40,7 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	 *   it can also be a string which corresponds to a Fluid variable given in the Controller.
 	 *   If it is a string, argument $itemsDataType is required and corresponds to a table name
 	 *
-	 * @param mixed $items can be a string which corresponds
+	 * @param mixed $items can be a string which corresponds to a fluid variable item.
 	 * @param string $itemsDataType
 	 * @param boolean $removeEmptyValues
 	 * @return array
@@ -85,6 +86,11 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 			$values = $values + $itemsFromDatabase;
 		}
 
+		$itemsFromUserFunction = $this->fetchItemsFromUserFunction($dataType, $fieldName);
+		if (!empty($itemsFromUserFunction)) {
+			$values = $values + $itemsFromUserFunction;
+		}
+
 		return $values;
 	}
 
@@ -102,16 +108,16 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 			throw new \Exception('Attribute $itemDataType can not be empty', 1389936621);
 		}
 
-		$allIdentifier = $this->templateVariableContainer->getAllIdentifiers();
-		if (!in_array($items, $allIdentifier)) {
+		if (!$this->templateVariableContainer->exists($items)) {
 			$message = sprintf('I could not fetch items for Fluid variable "%s". Has it been set in the Controller?', $items);
 			throw new \Exception($message, 1389880458);
 		}
 
-		$labelField = TcaService::table($itemsDataType)->getLabelField();
+		$labelField = Tca::table($itemsDataType)->getLabelField();
 		$labelProperty = GeneralUtility::underscoredToLowerCamelCase($labelField);
+
 		$values = array();
-		foreach ($this->templateVariableContainer->get('organisations') as $subject) {
+		foreach ($this->templateVariableContainer->get($items) as $subject) {
 			$key = ObjectAccess::getProperty($subject, 'uid');
 			$value = ObjectAccess::getProperty($subject, is_array($subject) ? $labelField : $labelProperty);
 			$values[$key] = $value;
@@ -128,10 +134,9 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	 * @return array
 	 */
 	protected function fetchItems($tableName, $fieldName, $removeEmptyValues) {
-
-		$configuration = TcaService::table($tableName)->field($fieldName)->getConfiguration();
-
 		$values = array();
+
+		$configuration = Tca::table($tableName)->field($fieldName)->getConfiguration();
 		if (!empty($configuration['items'])) {
 
 			foreach ($configuration['items'] as $items) {
@@ -158,6 +163,35 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	}
 
 	/**
+	 * Retrieve items from User Function.
+	 *
+	 * @param string $tableName
+	 * @param string $fieldName
+	 * @return array
+	 */
+	protected function fetchItemsFromUserFunction($tableName, $fieldName) {
+		$values = array();
+
+		$configuration = Tca::table($tableName)->field($fieldName)->getConfiguration();
+		if (!empty($configuration['itemsProcFunc'])) {
+			$parts = explode('php:', $configuration['itemsProcFunc']);
+			if (!empty($parts[1])) {
+
+				list($class, $method) = explode('->', $parts[1]);
+
+				$parameters['items'] = array();
+				$object = GeneralUtility::makeInstance($class);
+				$object->$method($parameters);
+
+				foreach ($parameters['items'] as $items) {
+					$values[$items[1]] = $items[0];
+				}
+			}
+		}
+		return $values;
+	}
+
+	/**
 	 * Retrieve items from Database.
 	 *
 	 * @param string $tableName
@@ -167,13 +201,14 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	protected function fetchItemsFromDatabase($tableName, $fieldName) {
 		$values = array();
 
-		$foreignTable = TcaService::table($tableName)->field($fieldName)->getForeignTable();
+		$foreignTable = Tca::table($tableName)->field($fieldName)->getForeignTable();
 		if (!empty($foreignTable)) {
 
-			$foreignLabelField = TcaService::table($foreignTable)->getLabelField();
-			$foreignOrder = TcaService::table($tableName)->field($fieldName)->getForeignOrder();
+			$foreignLabelField = Tca::table($foreignTable)->getLabelField();
+			$foreignOrder = Tca::table($tableName)->field($fieldName)->getForeignOrder();
 
-			$clause = '1 = 1';
+			$clause = '1 = 1 ';
+			$clause .= Tca::table($tableName)->field($fieldName)->getForeignClause();
 			if ($this->isFrontendMode()) {
 				$clause .= $this->getPageRepository()->enableFields($foreignTable);
 			}
@@ -216,5 +251,3 @@ class ItemsViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	}
 
 }
-
-?>

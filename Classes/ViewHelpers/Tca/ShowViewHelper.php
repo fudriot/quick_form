@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
+namespace Vanilla\QuickForm\ViewHelpers\Tca;
 
 /***************************************************************
  *  Copyright notice
@@ -52,5 +52,3 @@ class ShowViewHelper extends FormViewHelper {
 		return 'Show/' . $section;
 	}
 }
-
-?>

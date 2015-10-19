@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
+namespace Vanilla\QuickForm\ViewHelpers\Tca;
 
 /***************************************************************
  *  Copyright notice
@@ -25,12 +25,13 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
  ***************************************************************/
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Vidi\Tca\TcaService;
+use TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper;
+use Fab\Vidi\Tca\Tca;
 
 /**
  * View helper which returns the select size.
  */
-class SelectSizeViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
+class SelectSizeViewHelper extends RenderViewHelper {
 
 	/**
 	 * Returns the select size.
@@ -51,7 +52,7 @@ class SelectSizeViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper
 		}
 
 		$fieldName = GeneralUtility::camelCaseToLowerCaseUnderscored($property);
-		$configuration = TcaService::table($dataType)->field($fieldName)->getConfiguration();
+		$configuration = Tca::table($dataType)->field($fieldName)->getConfiguration();
 
 		$size = 1;
 
@@ -62,5 +63,3 @@ class SelectSizeViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper
 		return $size;
 	}
 }
-
-?>

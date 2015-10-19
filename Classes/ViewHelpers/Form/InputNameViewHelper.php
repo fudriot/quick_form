@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Render;
+namespace Vanilla\QuickForm\ViewHelpers\Form;
 /***************************************************************
  *  Copyright notice
  *
@@ -22,28 +22,26 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Render;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-use TYPO3\CMS\QuickForm\Validation\ValidationService;
-use TYPO3\CMS\QuickForm\ViewHelpers\AbstractValidationViewHelper;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
+use Fab\Vidi\Tca\Tca;
 
 /**
- * View helper which returns classes that will validate the field.
+ * View helper which returns an input name according to a property.
+ * Useful for the MultiChoices partial.
  */
-class ValidationClassesViewHelper extends AbstractValidationViewHelper {
+class InputNameViewHelper extends AbstractViewHelper {
 
 	/**
-	 * Returns classes that will validate the field.
+	 * Returns an input name according to a property.
 	 *
-	 * @param string $property
 	 * @return string
 	 */
-	public function render($property) {
-		$result = '';
+	public function render() {
+		$formObjectName = (string)$this->viewHelperVariableContainer->get('TYPO3\\CMS\\Fluid\\ViewHelpers\\FormViewHelper', 'formObjectName');
+		$property = $this->templateVariableContainer->get('property');
 
-		if (ValidationService::getInstance($this)->isRequired($property)) {
-			$result = 'required';
-		}
-		return $result;
+		// Use name of type array for the purpose of multi-choice.
+		return sprintf('%s[%s][]', $formObjectName, $property);
 	}
 }
-
-?>

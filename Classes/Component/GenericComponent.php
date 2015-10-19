@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\Component;
+namespace Vanilla\QuickForm\Component;
 
 /***************************************************************
  *  Copyright notice
@@ -105,5 +105,3 @@ class GenericComponent implements ComponentInterface {
 		return new GenericComponent($states['partialName'], $states['arguments'], $states['partialExtensionKey']);
 	}
 }
-
-?>

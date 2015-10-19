@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\Component;
+namespace Vanilla\QuickForm\Component;
 
 /***************************************************************
  *  Copyright notice
@@ -53,5 +53,3 @@ interface ComponentInterface {
 	 */
 	public function toArray();
 }
-
-?>

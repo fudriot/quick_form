@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
+namespace Vanilla\QuickForm\ViewHelpers\Tca;
 
 /***************************************************************
  *  Copyright notice
@@ -23,13 +23,14 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use Fab\Vidi\Tca\FieldType;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use TYPO3\CMS\QuickForm\Component\ComponentInterface;
-use TYPO3\CMS\QuickForm\Component\GenericComponent;
-use TYPO3\CMS\QuickForm\Utility\ArgumentRegistry;
-use TYPO3\CMS\Vidi\Tca\TcaService;
+use Vanilla\QuickForm\Component\ComponentInterface;
+use Vanilla\QuickForm\ObjectFactory;
+use Vanilla\QuickForm\ArgumentRegistry;
+use Fab\Vidi\Tca\Tca;
 
 /**
  * View helper which render a TCA form on the FE.
@@ -73,14 +74,13 @@ class FormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 
 		foreach ($items as $item) {
 
-
 			// Convert Quick Form component to array
 			if ($item instanceof ComponentInterface) {
 				$item = $item->toArray();
 			}
 
-			$this->resolvePartialRootPath($item);
 			$renderViewHelper = $this->getRenderViewHelper();
+			$this->configureView($item);
 
 			if (is_array($item) && isset($item['partial'])) {
 
@@ -105,27 +105,27 @@ class FormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 			} elseif (TRUE === is_string($item)) { // this is a field.
 
 				$initialArguments = $this->getInitialArguments();
-				$fieldType = TcaService::table($initialArguments['dataType'])->field($item)->getFieldType();
+				$fieldType = Tca::table($initialArguments['dataType'])->field($item)->getType();
 
-				if ($fieldType == TcaService::TEXTAREA) {
+				if ($fieldType == FieldType::TEXTAREA) {
 					$section = 'TextArea';
-				} elseif ($fieldType == TcaService::TEXTFIELD) {
+				} elseif ($fieldType == FieldType::TEXT || $fieldType == FieldType::EMAIL) {
 					$section = 'TextField';
-				} elseif ($fieldType == TcaService::NUMBER) {
+				} elseif ($fieldType == FieldType::NUMBER) {
 					$section = 'NumberField';
-				} elseif ($fieldType == TcaService::DATE) {
+				} elseif ($fieldType == FieldType::DATE) {
 					$section = 'DatePicker';
-				} elseif ($fieldType == TcaService::SELECT) {
+				} elseif ($fieldType == FieldType::SELECT) {
 					$section = 'Select';
-				} elseif ($fieldType == TcaService::MULTI_SELECT) {
+				} elseif ($fieldType == FieldType::MULTISELECT) {
 					$section = 'MultiSelect';
-				} elseif ($fieldType == TcaService::CHECKBOX) {
+				} elseif ($fieldType == FieldType::CHECKBOX) {
 					$section = 'Checkbox';
-				} elseif ($fieldType == TcaService::RADIO) {
+				} elseif ($fieldType == FieldType::RADIO) {
 					$section = 'RadioButtons';
 				} else {
-					var_dump('Unknown field type:' . $fieldType);
-					exit();
+					$message = sprintf('Unknown field type: "%s" for field "%s"', $fieldType, $item);
+					throw new \Exception($message, 1401954717);
 				}
 
 				$partial = $this->computePartialNameForField($section);
@@ -199,7 +199,7 @@ class FormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 
 			$this->arguments['arguments']['dataType'] = $this->arguments['dataType'];
 			$this->arguments['arguments']['validationType'] = $this->arguments['validation'];
-			$this->arguments['arguments']['type'] = (int) $this->arguments['type']; // add useful variable to be transmitted along the rendering.
+			$this->arguments['arguments']['type'] = (int)$this->arguments['type']; // add useful variable to be transmitted along the rendering.
 			$initialArguments = ArgumentRegistry::getInstance()->set($this->arguments['arguments'])->get();
 		}
 
@@ -212,25 +212,25 @@ class FormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	 */
 	protected function getItems() {
 		$items = $this->arguments['items'];
-		$type = (int) $this->arguments['type'];
+		$type = (int)$this->arguments['type'];
 
 		$index = $this->arguments['index'];
 
 		if (empty($items)) {
 			$dataType = $this->arguments['dataType'];
-			if (0 === $type && empty($GLOBALS['TCA'][$dataType]['feInterface']['types'][$type])) {
+			if (0 === $type && empty($GLOBALS['TCA'][$dataType]['quick_form'][$type])) {
 				$type++; // try to shift to the next index.
 				$this->arguments['type'] = $type;
 			}
 
-			if (empty($GLOBALS['TCA'][$dataType]['feInterface']['types'][$type])) {
-				$message = sprintf('No TCA configuration found in [feInterface][types][%s] for data type "%s"',
+			if (empty($GLOBALS['TCA'][$dataType]['quick_form'][$type])) {
+				$message = sprintf('No TCA configuration found in [quick_form][%s] for data type "%s"',
 					$type,
 					$dataType
 				);
 				throw new \Exception($message, 1384703096);
 			}
-			$items = $GLOBALS['TCA'][$dataType]['feInterface']['types'][$type];
+			$items = $GLOBALS['TCA'][$dataType]['quick_form'][$type];
 		} elseif (isset($items[$index])) {
 			$items = $items[$index];
 		}
@@ -268,40 +268,47 @@ class FormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 	 */
 	public function getRenderViewHelper() {
 
-		/** @var \TYPO3\CMS\Fluid\Core\Rendering\RenderingContext $renderingContext */
-		$renderingContext = $this->objectManager->get('TYPO3\CMS\Fluid\Core\Rendering\RenderingContext');
-		$renderingContext->setControllerContext($this->controllerContext);
-		$renderingContext->injectTemplateVariableContainer($this->templateVariableContainer);
-
-		// Prepare View
-		/** @var \TYPO3\CMS\Fluid\View\TemplateView $view */
-		$view = $this->viewHelperVariableContainer->getView();
-		$view->setPartialRootPath($this->partialRootPath);
-
-		// Inject Variable Container
-		$renderingContext->injectViewHelperVariableContainer($this->viewHelperVariableContainer);
-
-		/** @var \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper $renderViewHelper */
-		$renderViewHelper = $this->objectManager->get('TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper');
-		$renderViewHelper->setRenderingContext($renderingContext);
+		$renderViewHelper = ObjectFactory::getInstance()->getRenderViewHelper(
+			$this->controllerContext,
+			$this->templateVariableContainer,
+			$this->viewHelperVariableContainer
+		);
 
 		return $renderViewHelper;
+	}
+
+	/**
+	 * Dynamically configure the View.
+	 *
+	 * @param array|ComponentInterface $item
+	 * @return void
+	 */
+	protected function configureView($item) {
+
+		$partialRootPath = $this->resolvePartialRootPath($item);
+
+		/** @var \TYPO3\CMS\Fluid\View\TemplateView $view */
+		$view = $this->viewHelperVariableContainer->getView();
+		$view->setPartialRootPath($partialRootPath);
 	}
 
 	/**
 	 * Compute the partial root path given an item.
 	 *
 	 * @param array|ComponentInterface $item
+	 * @return string
 	 */
 	protected function resolvePartialRootPath($item) {
 
 		$settings = $this->getSettings();
 
+		// Indicate the extension where to find the partials.
+		// Default value is "quick_form" here.
 		$extensionKey = $settings['partialExtensionKey'];
 		if (is_array($item) && isset($item['partialExtensionKey'])) {
 			$extensionKey = $item['partialExtensionKey'];
 		}
-		$this->partialRootPath = ExtensionManagementUtility::extPath($extensionKey) . 'Resources/Private/Partials/';
+		return ExtensionManagementUtility::extPath($extensionKey) . 'Resources/Private/Partials/';
 	}
 
 	/**
@@ -315,5 +322,3 @@ class FormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper {
 		return $configuration['plugin.']['tx_quickform.']['settings.'];
 	}
 }
-
-?>

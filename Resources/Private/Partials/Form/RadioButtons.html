@@ -1,23 +1,26 @@
 <div xmlns="http://www.w3.org/1999/xhtml" lang="en"
      xmlns:f="http://typo3.org/ns/fluid/ViewHelpers"
-     xmlns:qf="http://typo3.org/ns/TYPO3/CMS/QuickForm/ViewHelpers">
+     xmlns:qf="http://typo3.org/ns/Vanilla/QuickForm/ViewHelpers">
 
 	<f:section name="RadioButtons">
-		<div class="form-group {qf:render.hasError(property: '{property}')}">
+		<div class="form-group {qf:property.errorClass()}">
 			<label class="control-label">
 				<qf:tca.fieldLabel/>
 				<f:if condition="{qf:property.isRequired(property: '{property}')}">*</f:if>
 			</label>
 
-			<f:form.hidden property="{property}" value="{value}"/>
-			<f:for each="{qf:tca.items()}" as="radioButtonLabel" key="value">
-				<div class="radio">
+			<div>
+				<f:form.hidden property="{property}" value="{value}"/>
+				<f:for each="{qf:tca.items()}" as="radioButtonLabel" key="radioValue">
 					<label class="radio-inline">
-						<f:form.radio property="{property}" value="{value}"/>
+						<f:form.radio property="{property}"
+						              value="{radioValue}"
+						              checked="{f:if(condition: '{qf:property.value()} == {radioValue}', then: 'true', else: 'false')}"
+						              additionalAttributes="{qf:form.additionalAttributes()}"/>
 						{radioButtonLabel}
 					</label>
-				</div>
-			</f:for>
+				</f:for>
+			</div>
 		</div>
 	</f:section>
 </div>

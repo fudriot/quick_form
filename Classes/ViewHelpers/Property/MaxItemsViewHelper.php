@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
+namespace Vanilla\QuickForm\ViewHelpers\Property;
 /***************************************************************
  *  Copyright notice
  *
@@ -23,8 +23,8 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\QuickForm\ViewHelpers\AbstractValidationViewHelper;
-use TYPO3\CMS\Vidi\Tca\TcaService;
+use Vanilla\QuickForm\ViewHelpers\AbstractValidationViewHelper;
+use Fab\Vidi\Tca\Tca;
 
 /**
  * View helper which return the max items to be in relation with the object in the context.
@@ -48,7 +48,7 @@ class MaxItemsViewHelper extends AbstractValidationViewHelper {
 
 		$property = $this->templateVariableContainer->get('property');
 		$fieldName = GeneralUtility::camelCaseToLowerCaseUnderscored($property);
-		$configuration = TcaService::table($dataType)->field($fieldName)->getConfiguration();
+		$configuration = Tca::table($dataType)->field($fieldName)->getConfiguration();
 
 		if (isset($configuration['maxitems'])) {
 			$result = $configuration['maxitems'];
@@ -56,5 +56,3 @@ class MaxItemsViewHelper extends AbstractValidationViewHelper {
 		return $result;
 	}
 }
-
-?>

@@ -67,11 +67,11 @@ show the field is required.
 To get the validation info, Quick Form has three possible sources that can be configured with attribute "validation".
 If nothing is configured Quick Form will take the TCA as fallback which has the advantage to keep in sync the Backend and the Frontend.
 
-* tca: the default value, check validation against TCA.
-* typoscript: Extbase makes it quite complicated to validate a model having different types.
+* ``tca``: check validation against TCA, default
+* ``typoscript``: Extbase makes it quite complicated to validate a model having different types.
   To work around typoscript validation can be used. Configuration must be given in ``plugin.tx_quickform.validate``
-* object: use the object provided by context and use reflection to tell what fields are required.
-* MyExtension\Domain\Model\Foo: an object is not always available in the context. A model name can be provided.
+* ``object``: use the object provided by context and use reflection to tell what fields are required.
+* ``MyExtension\Domain\Model\Foo``: an object is not always available in the context. A model name can be provided.
 
 
 @todo add more validation output such as string length, email, ...
@@ -84,26 +84,22 @@ In file ``EXT:sample/Configuration/TCA/tx_sample_domain_model_foo`` make sure to
 
 	# Adequate for "flat" structure.
 	return array(
-		'feInterface' => array(
-			'types' => array(
-				'1' => 'first_name, last_name, ...',
-			),
+		'quick_form' => array(
+			'1' => 'first_name, last_name, ...',
 		),
 
 TCA configuration can be more complex by accepting nested structure::
 
 	# Adequate for "nested" structure which contains field-set and other containers.
 	return array(
-		'feInterface' => array(
-			'types' => array(
-				'1' => array(
-					'partial' => 'Form/FieldSet',
-					'items' => array(
-						'first_name',
-						'last_name',
-						array(
-							'partial' => 'Form/Submit',
-						),
+		'quick_form' => array(
+			'1' => array(
+				'partial' => 'Form/FieldSet',
+				'items' => array(
+					'first_name',
+					'last_name',
+					array(
+						'partial' => 'Form/Submit',
 					),
 				),
 			),
@@ -114,15 +110,13 @@ when working with an IDE which auto-complete parameters::
 
 	# Usage of a Quick Form Component
 	return array(
-		'feInterface' => array(
-			'types' => array(
-				'1' => array(
-					'partial' => 'Form/FieldSet',
-					'items' => array(
-						'first_name',
-						'last_name',
-						new \TYPO3\CMS\QuickForm\Component\SubmitComponent()
-					),
+		'quick_form' => array(
+			'1' => array(
+				'partial' => 'Form/FieldSet',
+				'items' => array(
+					'first_name',
+					'last_name',
+					new \Vanilla\QuickForm\Component\SubmitComponent()
 				),
 			),
 		),
@@ -133,12 +127,21 @@ Use "external" Partials
 Partials within EXT:quick_start are taken as defaults. However, it is possible to use "external" Partials located in
 another extension::
 
-	new \TYPO3\CMS\QuickForm\Component\GenericComponent('Form/Foo', array('property' => 'propertyName'), 'foo'),
+	new \Vanilla\QuickForm\Component\GenericComponent('Form/Foo', array('property' => 'propertyName', 'label' => 'fieldName'), 'foo'),
 
 * The first parameter corresponds to the Partial Name
 * The second to the arguments
 * The third is the extension where the Partials come from
 
+
+Override label
+==============
+
+In case the Frontend label must be different than in the BE, use option ``alternative_label`` in the arguments of the Form Component::
+
+	array(
+		'alternative_label' => 'LLL:EXT:bobst_forms/Resources/Private/Language/locallang.xlf:privacy_satement_label',
+	)
 
 Quick Form Components
 =====================
@@ -184,6 +187,17 @@ CheckboxGroup
 			),
 		),
 
+Checkbox
+--------
+
+If checkbox must be specially configured::
+
+		new \Vanilla\QuickForm\Component\CheckboxComponent(
+			'hasNewsletterSubscription',
+			'has_newsletter_subscription',
+			array('group_label' => 'Newsletter')
+		),
+
 TCA configuration
 +++++++++++++++++
 
@@ -192,7 +206,7 @@ TCA configuration
 
 		'operational_data_wheels' => array(
 			'exclude' => 0,
-			'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.operational_data_wheels',
+			'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_foo_domain_model_foo.operational_data_wheels',
 			'config' => array(
 				'type' => 'check',
 				'default' => '0'
@@ -200,7 +214,7 @@ TCA configuration
 		),
 		'operational_data_tracks' => array(
 			'exclude' => 0,
-			'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.operational_data_tracks',
+			'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_foo_domain_model_foo.operational_data_tracks',
 			'config' => array(
 				'type' => 'check',
 				'default' => '0'
@@ -236,6 +250,26 @@ Some more JavaScript is required here. To be found a jQuery plugin for Bootstrap
 repository in branch "bs3" as of this writing. https://github.com/eternicode/bootstrap-datepicker/tree/bs3
 
 
+Honey Pot
+---------
+
+In TCA::
+
+
+	new \Vanilla\QuickForm\Component\HoneyPotComponent(),
+
+In Extbase controller::
+
+	/**
+	 * @return void
+	 * @validate $request \Vanilla\QuickForm\Validator\HoneyPotValidator
+	 * @param \Vendor\Extension\Domain\Model\Foo $foo
+	 */
+	public function createAction(Foo $foo = NULL) {
+
+
+	}
+
 TCA configuration
 +++++++++++++++++
 
@@ -243,7 +277,7 @@ TCA configuration
 
 		'available_on_market_from' => array(
 			'exclude' => 0,
-			'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.available_on_market_from',
+			'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_foo_domain_model_foo.available_on_market_from',
 			'config' => array(
 				'type' => 'input',
 				'size' => 12,
@@ -255,6 +289,8 @@ TCA configuration
 
 Extbase code
 ++++++++++++
+
+::
 
 	/**
 	 * @var \DateTime
@@ -268,24 +304,22 @@ Multi Choice
 
 ::
 
-	new \TYPO3\CMS\QuickForm\Component\MultiChoicesComponent('protectionLevel'),
+	new \Vanilla\QuickForm\Component\MultiChoicesComponent('protectionLevel'),
 
 TCA configuration
 +++++++++++++++++
 
 ::
 
-	'protection_level' => array(
+	'some_field' => array(
 		'exclude' => 0,
-		'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.protection_level',
+		'label' => 'LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_foo_domain_model_foo.some_field',
 		'config' => array(
 			'type' => 'select',
 			'items' => array(
 				array('', ''),
-				array('LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.protection_level.imas', '1'),
-				array('LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.protection_level.stanag', '2'),
-				array('LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.protection_level.mil', '3'),
-				array('LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_ext_domain_model_equipment.protection_level.other', '4'),
+				array('LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_foo_domain_model_foo.some_field.label_1', '1'),
+				array('LLL:EXT:ext/Resources/Private/Language/locallang_db.xml:tx_foo_domain_model_foo.some_field.label_2', '2'),
 			),
 			'size' => 4,
 			'maxitems' => 10,
@@ -299,19 +333,51 @@ Extbase code
 Property::
 
 	/**
-	 * @var int
+	 * @var string
 	 */
-	protected $protectionLevel;
+	protected $someField;
 
+Beware, a special array-to-string converter must be defined in the Controller in order to convert the multi-choice to a CSV chain::
 
+	/**
+	 * Initialize object
+	 */
+	public function initializeAction() {
+
+		// Configure property mapping.
+		if ($this->arguments->hasArgument('objectName')) {
+
+			/** @var \Vanilla\QuickForm\TypeConverter\ArrayToStringConverter $typeConverter */
+			$typeConverter = $this->objectManager->get('Vanilla\QuickForm\TypeConverter\ArrayToStringConverter');
+
+			$this->arguments->getArgument('request')
+				->getPropertyMappingConfiguration()
+				->forProperty('someField')
+				->setTypeConverter($typeConverter);
+		}
+	}
 .. ................................................................................................
 
 File Upload
 -----------
 
+Suggested `EXT:media_upload`_ to use the file upload API in your Extbase controller.
+
 ::
 
-	new \TYPO3\CMS\QuickForm\Component\FileUploadComponent('logo'),
+	new \Vanilla\QuickForm\Component\FileUploadComponent('logo'),
+
+
+Media Upload
+------------
+
+Require `EXT:media_upload`_ which provides HTML5 file upload widget.
+
+::
+
+	new \Vanilla\QuickForm\Component\MediaUploadComponent('logo'),
+
+.. _EXT:media_upload: https://github.com/fudriot/media_upload
 
 TCA configuration
 +++++++++++++++++
