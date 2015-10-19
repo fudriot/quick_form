@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
+namespace Vanilla\QuickForm\ViewHelpers\Property;
 
 /***************************************************************
  *  Copyright notice
@@ -23,8 +23,10 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
 use TYPO3\CMS\Fluid\ViewHelpers\RenderViewHelper;
+use Fab\Vidi\Tca\Tca;
 
 /**
  * View helper which returns a property value. The property and the object are given from the context.
@@ -50,11 +52,15 @@ class ValueViewHelper extends RenderViewHelper {
 				// Retrieve the property name.
 				$property = $this->templateVariableContainer->get('property');
 				$result = ObjectAccess::getProperty($object, $property);
+			} else {
+				// Fetch defaults from TCA
+				$dataType = $this->templateVariableContainer->get('dataType');
+				$property = $this->templateVariableContainer->get('property');
+				$fieldName = GeneralUtility::camelCaseToLowerCaseUnderscored($property);
+				$result = Tca::table($dataType)->field($fieldName)->get('default');
 			}
 		}
 
 		return $result;
 	}
 }
-
-?>

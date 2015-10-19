@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
+namespace Vanilla\QuickForm\ViewHelpers\Property;
 /***************************************************************
  *  Copyright notice
  *
@@ -24,11 +24,12 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
  ***************************************************************/
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
+use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * View helper which format a date of a given property
  */
-class DateViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
+class DateViewHelper extends AbstractViewHelper {
 
 	/**
 	 * Returns a date given a format.
@@ -49,8 +50,8 @@ class DateViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
 
 
 		// Arguments have priority on object.
-		if (is_array($arguments['equipment']) && isset($arguments['equipment'][$property])) {
-			$result = $arguments['equipment'][$property];
+		if (is_array($arguments[$formObjectName]) && isset($arguments[$formObjectName][$property])) {
+			$result = $arguments[$formObjectName][$property];
 		} elseif ($this->templateVariableContainer->exists($formObjectName)) {
 
 			$object = $this->templateVariableContainer->get($formObjectName);
@@ -71,4 +72,3 @@ class DateViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
 		return $result;
 	}
 }
-?>

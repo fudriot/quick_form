@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\Utility;
+namespace Vanilla\QuickForm;
 
 /***************************************************************
  *  Copyright notice
@@ -27,12 +27,13 @@ namespace TYPO3\CMS\QuickForm\Utility;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * A class to store the arguments being passed.
  */
-class ArgumentRegistry implements \TYPO3\CMS\Core\SingletonInterface {
+class ArgumentRegistry implements SingletonInterface {
 
 	/**
 	 * @var $arguments
@@ -42,10 +43,10 @@ class ArgumentRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Gets a singleton instance of this class.
 	 *
-	 * @return \TYPO3\CMS\QuickForm\Utility\ArgumentRegistry
+	 * @return \Vanilla\QuickForm\ArgumentRegistry
 	 */
 	static public function getInstance() {
-		return GeneralUtility::makeInstance('TYPO3\CMS\QuickForm\Utility\ArgumentRegistry');
+		return GeneralUtility::makeInstance('Vanilla\QuickForm\ArgumentRegistry');
 	}
 
 	/**
@@ -57,12 +58,10 @@ class ArgumentRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
 	 * @param array $arguments
-	 * @return \TYPO3\CMS\QuickForm\Utility\ArgumentRegistry
+	 * @return \Vanilla\QuickForm\ArgumentRegistry
 	 */
 	public function set($arguments) {
 		$this->arguments = $arguments;
 		return $this;
 	}
 }
-
-?>

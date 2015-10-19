@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Form;
+namespace Vanilla\QuickForm\ViewHelpers\Form;
 /***************************************************************
  *  Copyright notice
  *
@@ -24,12 +24,13 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Form;
  ***************************************************************/
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
+use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * View helper which tells whether a checkbox should be checked according to a property name which
  * contains comma separated values.
  */
-class IsCheckedViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
+class IsCheckedViewHelper extends AbstractViewHelper {
 
 	/**
 	 * Returns whether a checkbox should be checked according to a property name which
@@ -51,8 +52,8 @@ class IsCheckedViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewH
 		$values = array();
 
 		// GET / POST values have the priority
-		if (is_array($arguments['equipment']) && isset($arguments['equipment'][$property])) {
-			$values = GeneralUtility::trimExplode(',', $arguments['equipment'][$property]);
+		if (is_array($arguments[$formObjectName]) && isset($arguments[$formObjectName][$property])) {
+			$values = GeneralUtility::trimExplode(',', $arguments[$formObjectName][$property]);
 		} elseif (is_object($object)) {
 
 			// Retrieve value from object.
@@ -63,5 +64,3 @@ class IsCheckedViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewH
 		return in_array($expectedValue, $values);
 	}
 }
-
-?>

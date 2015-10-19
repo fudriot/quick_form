@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
+namespace Vanilla\QuickForm\ViewHelpers\Tca;
 /***************************************************************
  *  Copyright notice
  *
@@ -22,13 +22,14 @@ namespace TYPO3\CMS\QuickForm\ViewHelpers\Tca;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-use TYPO3\CMS\Vidi\Tca\TcaService;
+use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
+use Fab\Vidi\Tca\Tca;
 
 /**
  * View helper which translates a label for field given by the context.
  * Under the hood, it will search the label from the TCA.
  */
-class FieldLabelViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
+class FieldLabelViewHelper extends AbstractViewHelper {
 
 	/**
 	 * Returns a label for field given by the context.
@@ -43,13 +44,14 @@ class FieldLabelViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractView
 		$dataType = $this->templateVariableContainer->get('dataType');
 
 		if ($key == '') {
-			$key = $this->templateVariableContainer->get('label');
+			$labelName = $this->templateVariableContainer->exists('alternative_label') ? 'alternative_label' : 'label';
+			$key = $this->templateVariableContainer->get($labelName);
 		}
 
 		if (strpos($key, 'LLL:') === 0) {
 			$result = $this->getFrontendObject()->sL($key);
 		} else {
-			$result = TcaService::table($dataType)->field($key)->getLabel();
+			$result = Tca::table($dataType)->field($key)->getLabel();
 		}
 		return $result;
 	}
@@ -63,4 +65,3 @@ class FieldLabelViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractView
 		return $GLOBALS['TSFE'];
 	}
 }
-?>

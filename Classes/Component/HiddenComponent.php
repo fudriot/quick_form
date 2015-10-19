@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\Component;
+namespace Vanilla\QuickForm\Component;
 
 /***************************************************************
  *  Copyright notice
@@ -60,5 +60,3 @@ class HiddenComponent extends GenericComponent {
 		return $this->partialName;
 	}
 }
-
-?>

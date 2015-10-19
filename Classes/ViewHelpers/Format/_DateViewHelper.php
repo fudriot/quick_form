@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Format;
+namespace Vanilla\QuickForm\ViewHelpers\Format;
 /***************************************************************
  *  Copyright notice
  *
@@ -41,4 +41,3 @@ class DateViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
 		return $date->format($format);
 	}
 }
-?>

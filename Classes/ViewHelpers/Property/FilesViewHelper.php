@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\QuickForm\ViewHelpers\Property;
+namespace Vanilla\QuickForm\ViewHelpers\Property;
 
 /***************************************************************
  *  Copyright notice
@@ -76,5 +76,3 @@ class FilesViewHelper extends RenderViewHelper {
 		return $result;
 	}
 }
-
-?>
